@@ -1,4 +1,8 @@
-# Logstash Plugin
+# logstash-codec-idmefv2
+
+A logstash plugin for IDMEFv2, based on logstash plugin for IDMEFv1.
+
+[![Travis Build Status](https://travis-ci.org/logstash-plugins/logstash-codec-idmef.svg)](https://travis-ci.org/logstash-plugins/logstash-codec-idmef)
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 
