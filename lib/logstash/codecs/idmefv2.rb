@@ -21,8 +21,9 @@ class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
   # The codec name
   config_name "idmefv2"
 
-  # Append a string to the message
   config :append, :validate => :string, :default => ', Hello World!'
+  config :defaults, :validate => :boolean, :default => false
+  config :paths, :validate => :hash, :default => {}
 
   def register
     @lines = LogStash::Plugin.lookup("codec", "line").new
