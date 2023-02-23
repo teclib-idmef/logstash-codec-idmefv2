@@ -38,53 +38,6 @@ end
 
 class Idmef < Hash
 
-    class ConstantEventFilter
-        def initialize(key, value)
-            @key = key
-            @value = value
-        end
-
-        def apply(event, idmef)
-            idmef[@key] = @value
-        end
-    end
-
-    class VarEventFilter
-        def initialize(key, event_key)
-            @key = key
-            @event_key = event_key
-        end
-
-        def apply(event, idmef)
-            idmef[@key] = event.get(@event_key)
-        end
-    end
-
-    class RecEventFilter
-        def initialize(key, filters)
-            @key = key
-            @filters = filters
-        end
-
-        def apply(event, idmef)
-            h = {}
-            Idmef.apply_filters(@filters, event, h)
-            idmef[@key] = h
-        end
-    end
-
-    @@analyzer_filters = [
-        VarEventFilter.new("Name", "[agent][name]"),
-        VarEventFilter.new("Model", "[agent][type]"),
-    ]
-
-    @@top_level_filters = [
-        ConstantEventFilter.new("Version", "2.0.3"),
-        VarEventFilter.new("ID", "[agent][ephemeral_id]"),
-        VarEventFilter.new("CreateTime", "[@timestamp]"),
-        RecEventFilter.new("Analyzer", @@analyzer_filters),
-    ]
-
     @@filter = {
         "Version" => "2.0.3",
         "ID" => "[agent][ephemeral_id]",
@@ -92,19 +45,42 @@ class Idmef < Hash
         "Analyzer" => {
             "Name" => "[agent][name]",
             "Model" => "[agent][type]",
+            "Category": [
+                "[input][type]",
+            ],
+            "Data": [
+                "[input][type]"
+            ],
+            "Method": [
+                "[@metadata][type]"
+            ],
         },
     }
 
-    def self.apply_filters(filters, event, idmef)
-        filters.each do |f|
-            f.apply(event, idmef) 
+    def self.apply_filter(filter, event)
+        if filter.is_a?(Hash)
+            h = {}
+            filter.each do |key, value|
+                h[key] = self.apply_filter(value, event)
+            end
+            return h
+        elsif filter.is_a?(Array)
+            a = []
+            filter.each do |value|
+                a << self.apply_filter(value, event)
+            end
+            return a
+        elsif filter.is_a?(String)
+            if filter.start_with?("[")
+                return event.get(filter)
+            else
+                return filter
+            end
         end
     end
 
     def self.from_event(event)
-        idmef = Idmef.new
-        self.apply_filters(@@top_level_filters, event, idmef)
-        idmef 
+        apply_filter(@@filter, event)
     end
 
     def to_event()
