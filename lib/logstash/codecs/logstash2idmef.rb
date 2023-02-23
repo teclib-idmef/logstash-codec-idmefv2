@@ -60,17 +60,50 @@ class Idmef < Hash
         end
     end
 
+    class RecEventFilter
+        def initialize(key, filters)
+            @key = key
+            @filters = filters
+        end
+
+        def apply(event, idmef)
+            h = {}
+            Idmef.apply_filters(@filters, event, h)
+            idmef[@key] = h
+        end
+    end
+
+    @@analyzer_filters = [
+        VarEventFilter.new("Name", "[agent][name]"),
+        VarEventFilter.new("Model", "[agent][type]"),
+    ]
+
     @@top_level_filters = [
         ConstantEventFilter.new("Version", "2.0.3"),
         VarEventFilter.new("ID", "[agent][ephemeral_id]"),
         VarEventFilter.new("CreateTime", "[@timestamp]"),
+        RecEventFilter.new("Analyzer", @@analyzer_filters),
     ]
+
+    @@filter = {
+        "Version" => "2.0.3",
+        "ID" => "[agent][ephemeral_id]",
+        "CreateTime" => "[@timestamp]",
+        "Analyzer" => {
+            "Name" => "[agent][name]",
+            "Model" => "[agent][type]",
+        },
+    }
+
+    def self.apply_filters(filters, event, idmef)
+        filters.each do |f|
+            f.apply(event, idmef) 
+        end
+    end
 
     def self.from_event(event)
         idmef = Idmef.new
-        for f in @@top_level_filters do
-            f.apply(event, idmef)
-        end
+        self.apply_filters(@@top_level_filters, event, idmef)
         idmef 
     end
 
