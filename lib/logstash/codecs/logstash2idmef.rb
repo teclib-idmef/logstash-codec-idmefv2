@@ -5,7 +5,7 @@ class Event < Object
         @event = {}
     end
 
-    def self.fromHash(hash)
+    def self.from_hash(hash)
         event = Event.new
         hash.each do |key, value|
             event.set(key, value)
@@ -13,7 +13,7 @@ class Event < Object
         event
     end
 
-    def toHash()
+    def to_hash()
         @event
     end
 
@@ -50,36 +50,36 @@ class Idmef < Hash
     end
 
     class VarEventFilter
-        def initialize(key, eventKey)
+        def initialize(key, event_key)
             @key = key
-            @eventKey = eventKey
+            @event_key = event_key
         end
 
         def apply(event, idmef)
-            idmef[@key] = event.get(@eventKey)
+            idmef[@key] = event.get(@event_key)
         end
     end
 
-    @@filters = [
+    @@top_level_filters = [
         ConstantEventFilter.new("Version", "2.0.3"),
         VarEventFilter.new("ID", "[agent][ephemeral_id]"),
         VarEventFilter.new("CreateTime", "[@timestamp]"),
     ]
 
-    def self.fromEvent(event)
+    def self.from_event(event)
         idmef = Idmef.new
-        for f in @@filters do
+        for f in @@top_level_filters do
             f.apply(event, idmef)
         end
         idmef 
     end
 
-    def toEvent()
+    def to_event()
         {}
     end
 
 end
 
 require('../../../bazar/t1')
-event = Event.fromHash(ev1())
-p Idmef.fromEvent(event).to_json
+event = Event.from_hash(ev1())
+p Idmef.from_event(event).to_json
