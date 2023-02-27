@@ -17,7 +17,7 @@
 #
 
 require "logstash/codecs/base"
-require "logstash" # needed for LogStash::Event
+#require "logstash" # needed for LogStash::Event
 
 class Idmef < Hash
 
@@ -77,25 +77,16 @@ class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
   # The codec name
   config_name "idmefv2"
 
-#  config :append, :validate => :string, :default => ', Hello World!'
-#  config :defaults, :validate => :boolean, :default => false
-#  config :paths, :validate => :hash, :default => {}
+  config :defaults, :validate => :boolean, :default => false
 
   def register
-#    @lines = LogStash::Plugin.lookup("codec", "line").new
-#    @lines.charset = "UTF-8"
   end # def register
 
   def decode(data)
-    @lines.decode(data) do |line|
-      replace = { "message" => line.get("message").to_s + @append }
-      yield LogStash::Event.new(replace)
-    end
   end # def decode
 
   # Encode a single event, this returns the raw data to be returned as a String
   def encode_sync(event)
-    #event.get("message").to_s + @append + NL
     Idmef.from_event(event).to_json
   end # def encode_sync
 
