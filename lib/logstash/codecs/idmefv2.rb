@@ -21,55 +21,60 @@ require "logstash/codecs/base"
 
 class Idmef < Hash
 
-  @@filter = {
-      "Version" => "2.0.3",
-      "ID" => "[agent][ephemeral_id]",
-      "CreateTime" => "[@timestamp]",
-      "Analyzer" => {
-          "Name" => "[agent][name]",
-          "Model" => "[agent][type]",
-          "Category": [
-              "[input][type]",
-          ],
-          "Data": [
-              "[input][type]"
-          ],
-          "Method": [
-              "[@metadata][type]"
-          ],
-      },
-  }
+    @@mapping = {
+        "Version" => "2.0.3",
+        "ID" => "[agent][ephemeral_id]",
+        "CreateTime" => "[@timestamp]",
+        "Analyzer" => {
+            "Name" => "[agent][name]",
+            "Model" => "[agent][type]",
+            "Category": [
+                "[input][type]",
+            ],
+            "Data": [
+                "[input][type]"
+            ],
+            "Method": [
+                "[@metadata][type]"
+            ],
+        },
+    }
 
-  def self.apply_filter(filter, event)
-      if filter.is_a?(Hash)
-          h = {}
-          filter.each do |key, value|
-              h[key] = self.apply_filter(value, event)
-          end
-          return h
-      elsif filter.is_a?(Array)
-          a = []
-          filter.each do |value|
-              a << self.apply_filter(value, event)
-          end
-          return a
-      elsif filter.is_a?(String)
-          if filter.start_with?("[")
-              return event.get(filter)
-          else
-              return filter
-          end
-      end
-  end
+    def self.apply_mapping(mapping, idmef, event)
+        if mapping.is_a?(Hash)
+            h = {}
+            mapping.each do |key, value|
+                h[key] = self.apply_mapping(value, event)
+            end
+            return h
+        elsif mapping.is_a?(Array)
+            a = []
+            mapping.each do |value|
+                a << self.apply_mapping(value, event)
+            end
+            return a
+        elsif mapping.is_a?(String)
+            if mapping.start_with?("[")
+                return event.get(mapping)
+            else
+                return mapping
+            end
+        end
+    end
 
-  def self.from_event(event)
-      apply_filter(@@filter, event)
-  end
+    def self.from_event(event)
+        apply_mapping(@@mapping, event)
+    end
 
-  def to_event()
-      {}
-  end
+    def self.apply_reverse_mapping(mapping, idmef, event)
 
+    end
+
+    def to_event()
+        event = LogStash::Event.new
+        event
+    end
+  
 end
 
 class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
