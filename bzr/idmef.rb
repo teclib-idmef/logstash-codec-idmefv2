@@ -16,13 +16,13 @@ class Idmef < Hash
         "Analyzer" => {
             "Name" => "[agent][name]",
             "Model" => "[agent][type]",
-            "Category": [
+            "Category" => [
                 "[input][type]",
             ],
-            "Data": [
+            "Data" => [
                 "[input][type]"
             ],
-            "Method": [
+            "Method" => [
                 "[@metadata][type]"
             ],
         },
@@ -61,7 +61,7 @@ class Idmef < Hash
             end
         elsif mapping.is_a?(Array)
             mapping.each do |value|
-                self.apply_reverse_mapping(value, idmef, event)
+                self.apply_reverse_mapping(value, idmef[0], event)
             end
         elsif mapping.is_a?(String)
             if mapping.start_with?("[")
