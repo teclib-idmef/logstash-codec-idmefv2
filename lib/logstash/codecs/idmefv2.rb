@@ -2,8 +2,17 @@
 
 require "logstash/codecs/base"
 require "logstash" # needed for LogStash::Event
+require 'json'
 
 class Idmef < Hash
+
+    def self.from_hash(hash)
+        idmef = self.new
+        hash.each do |key, value|
+            idmef[key] = value
+        end
+        idmef
+    end
 
     @@mapping = {
         "Version" => "2.0.3",
@@ -12,19 +21,19 @@ class Idmef < Hash
         "Analyzer" => {
             "Name" => "[agent][name]",
             "Model" => "[agent][type]",
-            "Category": [
+            "Category" => [
                 "[input][type]",
             ],
-            "Data": [
+            "Data" => [
                 "[input][type]"
             ],
-            "Method": [
+            "Method" => [
                 "[@metadata][type]"
             ],
         },
     }
 
-    def self.apply_mapping(mapping, idmef, event)
+    def self.apply_mapping(mapping, event)
         if mapping.is_a?(Hash)
             h = {}
             mapping.each do |key, value|
@@ -47,17 +56,17 @@ class Idmef < Hash
     end
 
     def self.from_event(event)
-        apply_mapping(@@mapping, event)
+        self.apply_mapping(@@mapping, event)
     end
 
     def self.apply_reverse_mapping(mapping, idmef, event)
         if mapping.is_a?(Hash)
             mapping.each do |key, value|
-                apply_reverse_mapping(value, idmef[key], event)
+                self.apply_reverse_mapping(value, idmef[key], event)
             end
         elsif mapping.is_a?(Array)
             mapping.each do |value|
-                apply_reverse_mapping(value, idmef, event)
+                self.apply_reverse_mapping(value, idmef[0], event)
             end
         elsif mapping.is_a?(String)
             if mapping.start_with?("[")
@@ -67,11 +76,13 @@ class Idmef < Hash
     end
 
     def to_event()
-        event = LogStash::Event.new
+        event = Logstash::Event.new
+        Idmef.apply_reverse_mapping(@@mapping, self, event)
         event
     end
   
 end
+
 
 class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
 
@@ -84,6 +95,8 @@ class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
   end # def register
 
   def decode(data)
+    idmef = Idmef.from_hash(JSON.parse(data))
+    yield idmef.to_event
   end # def decode
 
   # Encode a single event, this returns the raw data to be returned as a String
