@@ -1,5 +1,5 @@
 require 'json'
-require 'logstash'
+require 'logstashstub'
 require 'idmef'
 require 'example1'
 
