@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require "logstash/codecs/base"
-#require "logstash" # needed for LogStash::Event
+require "logstash/event"
 require 'json'
 
 class Idmef < Hash
