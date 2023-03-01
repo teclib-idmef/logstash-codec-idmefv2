@@ -75,11 +75,11 @@ class Idmef < Hash
         end
     end
 
-#    def to_event()
-#        event = Logstash::Event.new
-#        Idmef.apply_reverse_mapping(@@mapping, self, event)
-#        event
-#    end
+    def to_event()
+        event = Logstash::Event.new
+        Idmef.apply_reverse_mapping(@@mapping, self, event)
+        event
+    end
   
 end
 
@@ -98,13 +98,13 @@ class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
   end
 
   def decode(data)
-#    idmef = Idmef.from_hash(JSON.parse(data))
-#    yield idmef.to_event
-  end # def decode
+    idmef = Idmef.from_hash(JSON.parse(data))
+    yield idmef.to_event
+  end
 
   # Encode a single event, this returns the raw data to be returned as a String
   def encode_sync(event)
     Idmef.from_event(event).to_json
-  end # def encode_sync
+  end
 
 end # class LogStash::Codecs::Idmefv2
