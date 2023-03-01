@@ -65,8 +65,8 @@ class Idmef < Hash
                 self.apply_reverse_mapping(value, idmef[key], event)
             end
         elsif mapping.is_a?(Array)
-            mapping.each do |value|
-                self.apply_reverse_mapping(value, idmef[0], event)
+            mapping.each_with_index do | value, index |
+                self.apply_reverse_mapping(value, idmef[index], event)
             end
         elsif mapping.is_a?(String)
             if mapping.start_with?("[")
@@ -84,15 +84,18 @@ class Idmef < Hash
 end
 
 
+# Using this codec you can outpout an ECS event as an IDMEFv2 event or transform an input 
+# IDMEFv2 event to a ECS event.
 class LogStash::Codecs::Idmefv2 < LogStash::Codecs::Base
 
   # The codec name
   config_name "idmefv2"
 
-  config :defaults, :validate => :boolean, :default => false
+  config :mapping, :validate => :hash, :default => {}
 
   def register
-  end # def register
+    @logger.info("Registering idmefv2 codec: #{@mapping}")
+  end
 
   def decode(data)
 #    idmef = Idmef.from_hash(JSON.parse(data))

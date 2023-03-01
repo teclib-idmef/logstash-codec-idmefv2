@@ -60,8 +60,8 @@ class Idmef < Hash
                 self.apply_reverse_mapping(value, idmef[key], event)
             end
         elsif mapping.is_a?(Array)
-            mapping.each do |value|
-                self.apply_reverse_mapping(value, idmef[0], event)
+            mapping.each_with_index do | value, index |
+                self.apply_reverse_mapping(value, idmef[index], event)
             end
         elsif mapping.is_a?(String)
             if mapping.start_with?("[")

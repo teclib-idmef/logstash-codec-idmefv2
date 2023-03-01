@@ -5,12 +5,12 @@ module Logstash
         end
 
         def self.from_hash_rec(hash, event, parent_key)
-            if !hash.is_a?(Hash)
-                event.set("#{parent_key}", hash)
-            else
+            if hash.is_a?(Hash)
                 hash.each do |key, value|
                     self.from_hash_rec(value, event, "#{parent_key}[#{key}]")
                 end 
+            else
+                event.set("#{parent_key}", hash)
             end
         end
 
